@@ -39,7 +39,7 @@
  */
 
 #ifndef __MEMTEST_H__
-#define __MEMTEST_H_
+#define __MEMTEST_H__
 
 #include <stdio.h>
 #include <stdint.h>
