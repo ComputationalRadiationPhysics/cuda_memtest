@@ -187,7 +187,7 @@ thread_func(void* _arg)
 
 
 void*
-temp_monitor_thread_func(void* arg)
+temp_monitor_thread_func(void*)
 {
     do{
         update_temperature();
