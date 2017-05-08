@@ -38,7 +38,7 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
-#include <stdio.h>
+#include <cstdio>
 #include "misc.h"
 #include <cuda.h>
 #include <sys/time.h>
