@@ -47,7 +47,7 @@
 #include <sys/time.h>
 #include <csignal>
 
-#define MAX_NUM_GPUS 8
+#define MAX_NUM_GPUS 128
 bool useMappedMemory;
 void* mappedHostPtr;
 char hostname[64];
