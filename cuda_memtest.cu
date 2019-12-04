@@ -498,6 +498,7 @@ main(int argc, char** argv)
     PRINTF("num_gpus=%d\n", num_gpus);
     if(num_gpus > MAX_NUM_GPUS){
 	fprintf(stderr, "Error: max number of GPUs (%d) exceeded: %d\n", MAX_NUM_GPUS, num_gpus);
+        exit(ERR_GENERAL);
     }
     pthread_t temp_pid;
     if (monitor_temp){
