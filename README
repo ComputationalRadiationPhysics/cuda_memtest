@@ -3,13 +3,21 @@
 #  University of Illinois/NCSA
 #  Open Source License
 #  
-#  Copyright © 2009,    University of Illinois.  All rights reserved.
+#  Copyright © 2009-2012,    University of Illinois.  All rights reserved.
+#  Copyright © 2012-2019,    The developers of PIConGPU at Helmholtz-Zentrum Dresden-Rossendorf
 #  
 #  Developed by:
 #  
 #  Innovative Systems Lab  
 #  National Center for Supercomputing Applications  
 #  http://www.ncsa.uiuc.edu/AboutUs/Directorates/ISL.html
+#
+#  Forked and maintained for newer Nvidia GPUs since 2013 by:
+#
+#  Axel Huebl and Rene Widera
+#  Computational Radiation Physics Group
+#  Helmholtz-Zentrum Dresden-Rossendorf
+#  https://www.hzdr.de/crp
 #  
 #  Permission is hereby granted, free of charge, to any person obtaining a copy of 
 #  this software and associated documentation files (the "Software"), to deal with 
@@ -40,28 +48,21 @@
 
 This softare tests GPU memory for hardware errors and soft errors using CUDA or OpenCL
 
+=======================================Note for this fork ===============================================
+
+After our fork in 2013, we primarily focused on support for newer CUDA versions and support of hardware.
+Pull-requests maintaining the OpenCL versions are nevertheless still welcome.
 
 =======================================Compile and run ==================================================
 
 (I) Compile
 
-The default cuda install path is /usr/local/cuda.
-If your install path is not the default, you will need to set 
-CUDA_INSTALL_PATH to the correct path.
+mkdir build
+cd build
+cmake ..
+make
 
-Simply typing make should compile the program cuda_memtest
-%make
-
-If your GPUs does not have cuda capability 1.3, compile it with 1.0
-%make cuda_memtest_sm10
-
-Ignore the warning messsages
-"Advisory: Cannot tell what pointer points to, assuming global memory space"
-
-We've added the opencl implementation for the memory test that works on both Nvidia and AMD GPUs.
-To compile the opencl memtest, open the Makefile and edit the opencl install path, then
-%make ocl_memtest
-Run it with --help for usage information.
+Note: ".." is the path to the source directory.
 
 (II) Run
 
@@ -84,6 +85,10 @@ See help message by
 There is a simple script sanity_check.sh in the directory. 
 This script does a quick check if one GPU or all GPUs are in bad health.
 Example usage: 
+       # copy the cuda_memtest binary first into the same location as this script, e.g.
+       cd ..
+       mv build/cuda_memtest .
+
        ./sanity_check.sh 0   //check GPU 0
        ./sanity_check.sh 1   //check GPU 1 
        ./sanity_check.sh     //check All GPUs in the system
