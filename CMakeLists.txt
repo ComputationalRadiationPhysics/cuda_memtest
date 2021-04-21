@@ -124,7 +124,7 @@ cuda_add_executable(cuda_memtest
     cuda_memtest.cu
 )
 
-target_link_libraries(cuda_memtest ${LIBS} ${CUDA_CUDART_LIBRARY})
+target_link_libraries(cuda_memtest PRIVATE ${LIBS} ${CUDA_CUDART_LIBRARY})
 
 
 ################################################################################
