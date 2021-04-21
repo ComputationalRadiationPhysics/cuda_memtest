@@ -15,7 +15,7 @@ jobs:
     - name: install dependencies
       run: |
         .github/workflows/dependencies/nvcc11.sh
-    - name: build WarpX
+    - name: build
       run: |
         export PATH=/usr/local/nvidia/bin:/usr/local/cuda/bin:${PATH}
         export LD_LIBRARY_PATH=/usr/local/nvidia/lib:/usr/local/nvidia/lib64:/usr/local/cuda/lib64:${LD_LIBRARY_PATH}
@@ -24,7 +24,7 @@ jobs:
         export CXXFLAGS="-Wall -Wextra -Werror"
 
         cmake -S . -B build                   \
-          -DCUDA_ARCH=20                      \
+          -DCUDA_ARCH=sm_35                   \
           -DSAME_NVCC_FLAGS_IN_SUBPROJECTS=ON
         cmake --build build -j 2
         sudo cmake --build build --target install
