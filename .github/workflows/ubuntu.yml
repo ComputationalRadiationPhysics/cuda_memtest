@@ -24,7 +24,7 @@ jobs:
         export CXXFLAGS="-Wall -Wextra -Werror"
 
         cmake -S . -B build                   \
-          -DCUDA_ARCH=sm_35                   \
+          -DCMAKE_CUDA_ARCHITECTURES=35       \
           -DSAME_NVCC_FLAGS_IN_SUBPROJECTS=ON
         cmake --build build -j 2
         sudo cmake --build build --target install
