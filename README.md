@@ -65,11 +65,14 @@ Inside the source directory, run:
 ```bash
 mkdir build
 cd build
-cmake ..
+# build for NVIDIA architecture sm_35
+cmake -DCMAKE_CUDA_ARCHITECTURES=35 .. 
 make
 ```
 
-Note: In CMake, `..` is the path to the source directory.
+Note: 
+  - In CMake, `..` is the path to the source directory.
+  - You can find the architecture for your NVIDIA GPU on [this site](https://developer.nvidia.com/cuda-gpus).
 
 We also provide the package `cuda-memtest` in the [Spack package manager](https://spack.io) .
 
@@ -127,7 +130,7 @@ Consider this script as a source for inspiration, or so.
 
 Note: You are not using CUDA 2.2 anymore, are you? ;-)
 
-* We are not maintaining the OpenCL version of this code base.
+* We are **not** maintaining the OpenCL version of this code base.
   Pull requests restoring and updating the OpenCL capabilities are welcome.
 
 ## Test Descriptions
