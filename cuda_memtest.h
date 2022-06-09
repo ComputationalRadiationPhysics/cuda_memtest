@@ -38,6 +38,8 @@
  * DEALINGS WITH THE SOFTWARE.
  */
 
+#define MEMTEST_PP_CONCAT_DO(X, Y) X##Y
+
 #ifndef __MEMTEST_H__
 #define __MEMTEST_H__
 
@@ -48,7 +50,19 @@
 #include <iostream>
 #include <stdexcept>
 
-#include <cuda.h>
+#if defined(__CUDACC__)
+#    include <cuda.h>
+//! prefix a name with `cuda`
+#    define MEMTEST_API_PREFIX(name) MEMTEST_PP_CONCAT_DO(cuda, name)
+    using deviceProp_t = cudaDeviceProp;
+    using apiError_t = cudaError;
+#elif defined(__HIP__)
+#    include <hip/hip_runtime.h>
+//! prefix a name with `hip`
+#    define MEMTEST_API_PREFIX(name) MEMTEST_PP_CONCAT_DO(hip, name)
+    using deviceProp_t = hipDeviceProp_t;
+    using apiError_t = hipError_t;
+#endif
 #if (ENABLE_NVML==1)
 #include <nvml.h>
 #endif
@@ -113,7 +127,7 @@ extern void get_driver_info(char* info, unsigned int len);
 
 
 #define SHOW_PROGRESS(msg, i, tot_num_blocks)				\
-    cudaDeviceSynchronize();						\
+    MEMTEST_API_PREFIX(DeviceSynchronize)();						\
     unsigned int num_checked_blocks =  i+GRIDSIZE <= tot_num_blocks? i+GRIDSIZE: tot_num_blocks; \
     if (verbose >=2){							\
 	if(interactive){ \
@@ -125,17 +139,17 @@ extern void get_driver_info(char* info, unsigned int len);
     fflush(stdout);
 
 
-#define CUERR  do{ cudaError_t cuda_err; \
-	if ((cuda_err = cudaGetLastError()) != cudaSuccess) {		\
-	    FPRINTF("ERROR: CUDA error: %s, line %d, file %s\n", cudaGetErrorString(cuda_err),  __LINE__, __FILE__); \
-	    PRINTF("ERROR: CUDA error: %s, line %d, file %s\n", cudaGetErrorString(cuda_err),  __LINE__, __FILE__); \
+#define CUERR  do{ MEMTEST_API_PREFIX(Error_t) cuda_err; \
+	if ((cuda_err = MEMTEST_API_PREFIX(GetLastError)()) != MEMTEST_API_PREFIX(Success)) {		\
+	    FPRINTF("ERROR: CUDA error: %s, line %d, file %s\n", MEMTEST_API_PREFIX(GetErrorString(cuda_err)),  __LINE__, __FILE__); \
+	    PRINTF("ERROR: CUDA error: %s, line %d, file %s\n", MEMTEST_API_PREFIX(GetErrorString)(cuda_err),  __LINE__, __FILE__); \
 	    exit(cuda_err);}}while(0)
 
-#define SYNC_CUERR  do{ cudaError_t cuda_err; \
-	cudaDeviceSynchronize(); \
-        if ((cuda_err = cudaGetLastError()) != cudaSuccess) {                \
-            FPRINTF("ERROR: CUDA error: %s, line %d, file %s\n", cudaGetErrorString(cuda_err),  __LINE__, __FILE__); \
-            PRINTF("ERROR: CUDA error: %s, line %d, file %s\n", cudaGetErrorString(cuda_err),  __LINE__, __FILE__); \
+#define SYNC_CUERR  do{ MEMTEST_API_PREFIX(Error_t) cuda_err; \
+	MEMTEST_API_PREFIX(DeviceSynchronize)(); \
+        if ((cuda_err = MEMTEST_API_PREFIX(GetLastError)()) != MEMTEST_API_PREFIX(Success)) {                \
+            FPRINTF("ERROR: CUDA error: %s, line %d, file %s\n", MEMTEST_API_PREFIX(GetErrorString)(cuda_err),  __LINE__, __FILE__); \
+            PRINTF("ERROR: CUDA error: %s, line %d, file %s\n", MEMTEST_API_PREFIX(GetErrorString)(cuda_err),  __LINE__, __FILE__); \
             exit(cuda_err);}}while(0)
 
 #if (ENABLE_NVML==1)

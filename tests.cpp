@@ -40,7 +40,7 @@
 
 #include <cstdio>
 #include "misc.h"
-#include <cuda.h>
+#include "cuda_memtest.h"
 #include <sys/time.h>
 #include <unistd.h>
 
@@ -114,11 +114,11 @@ error_checking(const char* msg, unsigned int blockidx)
     unsigned long host_err_second_read[MAX_ERR_RECORD_COUNT];
     unsigned int i;
 
-    cudaMemcpy((void*)&err, (void*)err_count, sizeof(unsigned int), cudaMemcpyDeviceToHost);CUERR;
-    cudaMemcpy((void*)&host_err_addr[0], (void*)err_addr, sizeof(unsigned long)*MAX_ERR_RECORD_COUNT, cudaMemcpyDeviceToHost);CUERR;
-    cudaMemcpy((void*)&host_err_expect[0], (void*)err_expect, sizeof(unsigned long)*MAX_ERR_RECORD_COUNT, cudaMemcpyDeviceToHost);CUERR;
-    cudaMemcpy((void*)&host_err_current[0], (void*)err_current, sizeof(unsigned long)*MAX_ERR_RECORD_COUNT, cudaMemcpyDeviceToHost);CUERR;
-    cudaMemcpy((void*)&host_err_second_read[0], (void*)err_second_read, sizeof(unsigned long)*MAX_ERR_RECORD_COUNT, cudaMemcpyDeviceToHost);CUERR;
+    MEMTEST_API_PREFIX(Memcpy)((void*)&err, (void*)err_count, sizeof(unsigned int), MEMTEST_API_PREFIX(MemcpyDeviceToHost));CUERR;
+    MEMTEST_API_PREFIX(Memcpy)((void*)&host_err_addr[0], (void*)err_addr, sizeof(unsigned long)*MAX_ERR_RECORD_COUNT, MEMTEST_API_PREFIX(MemcpyDeviceToHost));CUERR;
+    MEMTEST_API_PREFIX(Memcpy)((void*)&host_err_expect[0], (void*)err_expect, sizeof(unsigned long)*MAX_ERR_RECORD_COUNT, MEMTEST_API_PREFIX(MemcpyDeviceToHost));CUERR;
+    MEMTEST_API_PREFIX(Memcpy)((void*)&host_err_current[0], (void*)err_current, sizeof(unsigned long)*MAX_ERR_RECORD_COUNT, MEMTEST_API_PREFIX(MemcpyDeviceToHost));CUERR;
+    MEMTEST_API_PREFIX(Memcpy)((void*)&host_err_second_read[0], (void*)err_second_read, sizeof(unsigned long)*MAX_ERR_RECORD_COUNT, MEMTEST_API_PREFIX(MemcpyDeviceToHost));CUERR;
 
 #define ERR_MSG_LENGTH 4096
     char error_msg[ERR_MSG_LENGTH];
@@ -189,12 +189,12 @@ error_checking(const char* msg, unsigned int blockidx)
 		unreported_errors ++;
 	    }
 	}
-	cudaMemset(err_count, 0, sizeof(unsigned int));CUERR;
-	cudaMemset((void*)&err_addr[0], 0, sizeof(unsigned long)*MAX_ERR_RECORD_COUNT);CUERR;
-	cudaMemset((void*)&err_expect[0], 0, sizeof(unsigned long)*MAX_ERR_RECORD_COUNT);CUERR;
-	cudaMemset((void*)&err_current[0], 0, sizeof(unsigned long)*MAX_ERR_RECORD_COUNT);CUERR;
+	MEMTEST_API_PREFIX(Memset)(err_count, 0, sizeof(unsigned int));CUERR;
+	MEMTEST_API_PREFIX(Memset)((void*)&err_addr[0], 0, sizeof(unsigned long)*MAX_ERR_RECORD_COUNT);CUERR;
+	MEMTEST_API_PREFIX(Memset)((void*)&err_expect[0], 0, sizeof(unsigned long)*MAX_ERR_RECORD_COUNT);CUERR;
+	MEMTEST_API_PREFIX(Memset)((void*)&err_current[0], 0, sizeof(unsigned long)*MAX_ERR_RECORD_COUNT);CUERR;
 	if (exit_on_error){
-	    cudaDeviceReset();
+	    MEMTEST_API_PREFIX(DeviceReset)();
 	    exit(ERR_BAD_STATE);
 	}
     }
@@ -1191,7 +1191,7 @@ test7(char* ptr, unsigned int tot_num_blocks)
 	host_buf[i] = get_random_num();
     }
 
-    cudaMemcpy(ptr, host_buf, BLOCKSIZE, cudaMemcpyHostToDevice);
+    MEMTEST_API_PREFIX(Memcpy)(ptr, host_buf, BLOCKSIZE, MEMTEST_API_PREFIX(MemcpyHostToDevice));
 
 
     char* end_ptr = ptr + tot_num_blocks* BLOCKSIZE;
@@ -1476,11 +1476,11 @@ __global__ void test10_kernel_readwrite(char* ptr, int memsize, TYPE p1, TYPE p2
 // This will output the proper CUDA error strings in the event that a CUDA host call returns an error
 #define checkCudaErrors(err)  __checkCudaErrors (err, __FILE__, __LINE__)
 
-inline void __checkCudaErrors(cudaError err, const char *file, const int line )
+inline void __checkCudaErrors(apiError_t err, const char *file, const int line )
 {
-    if(cudaSuccess != err)
+    if(MEMTEST_API_PREFIX(Success) != err)
     {
-        fprintf(stderr, "%s(%i) : CUDA Runtime API error %d: %s.\n",file, line, (int)err, cudaGetErrorString( err ) );
+        fprintf(stderr, "%s(%i) : CUDA Runtime API error %d: %s.\n",file, line, (int)err, MEMTEST_API_PREFIX(GetErrorString)( err ) );
         exit(-1);
     }
 }
@@ -1497,17 +1497,17 @@ void test10(char* ptr, unsigned int tot_num_blocks)
 	p1 = get_random_num_long();
     }
     TYPE p2 = ~p1;
-    cudaStream_t stream;
-    cudaEvent_t start, stop;
-    checkCudaErrors(cudaStreamCreate(&stream));
-    checkCudaErrors(cudaEventCreate(&start));
-    checkCudaErrors(cudaEventCreate(&stop));
+    MEMTEST_API_PREFIX(Stream_t) stream;
+    MEMTEST_API_PREFIX(Event_t) start, stop;
+    checkCudaErrors(MEMTEST_API_PREFIX(StreamCreate)(&stream));
+    checkCudaErrors(MEMTEST_API_PREFIX(EventCreate)(&start));
+    checkCudaErrors(MEMTEST_API_PREFIX(EventCreate)(&stop));
 
     int n = num_iterations;
     float elapsedtime;
     dim3 gridDim(STRESS_GRIDSIZE);
     dim3 blockDim(STRESS_BLOCKSIZE);
-    checkCudaErrors(cudaEventRecord(start, stream));
+    checkCudaErrors(MEMTEST_API_PREFIX(EventRecord)(start, stream));
 
     PRINTF("Test10 with pattern=0x%lx\n", p1);
     test10_kernel_write<<<gridDim, blockDim, 0, stream>>>(ptr, tot_num_blocks*BLOCKSIZE, p1); SYNC_CUERR;
@@ -1518,16 +1518,16 @@ void test10(char* ptr, unsigned int tot_num_blocks)
 	p2 = ~p2;
 
     }
-    cudaEventRecord(stop, stream);
-    cudaEventSynchronize(stop);
+    MEMTEST_API_PREFIX(EventRecord)(stop, stream);
+    MEMTEST_API_PREFIX(EventSynchronize)(stop);
     error_checking("test10[Memory stress test]",  0);
-    cudaEventElapsedTime(&elapsedtime, start, stop);
+    MEMTEST_API_PREFIX(EventElapsedTime)(&elapsedtime, start, stop);
     DEBUG_PRINTF("test10: elapsedtime=%f, bandwidth=%f GB/s\n", elapsedtime, (2*n+1)*tot_num_blocks/elapsedtime);
 
-   cudaEventDestroy(start);
-   cudaEventDestroy(stop);
+   MEMTEST_API_PREFIX(EventDestroy)(start);
+   MEMTEST_API_PREFIX(EventDestroy)(stop);
 
-   cudaStreamDestroy(stream);
+   MEMTEST_API_PREFIX(StreamDestroy)(stream);
 
 #if 0
     TYPE* host_buf = (TYPE*)malloc(tot_num_blocks*BLOCKSIZE);
@@ -1536,7 +1536,7 @@ void test10(char* ptr, unsigned int tot_num_blocks)
 	exit(ERR_GENERAL);
     }
     memset(host_buf, 0, tot_num_blocks* BLOCKSIZE);
-    cudaMemcpy(host_buf, ptr, tot_num_blocks*BLOCKSIZE, cudaMemcpyDeviceToHost);
+    MEMTEST_API_PREFIX(Memcpy)(host_buf, ptr, tot_num_blocks*BLOCKSIZE, MEMTEST_API_PREFIX(MemcpyDeviceToHost));
     for(unsigned long i=0;i < (tot_num_blocks*BLOCKSIZE)/sizeof(TYPE) ;i ++){
 	if (host_buf[i] != p1){
 	    PRINTF("ERROR: data not match for i=%d, expecting 0x%x, current value=0x%x\n", i, p1, host_buf[i]);
@@ -1572,20 +1572,20 @@ cuda_memtest_t cuda_memtests[]={
 void
 allocate_small_mem(void)
 {
-    cudaMalloc((void**)&err_count, sizeof(unsigned int)); CUERR;
-    cudaMemset(err_count, 0, sizeof(unsigned int)); CUERR;
+    MEMTEST_API_PREFIX(Malloc)((void**)&err_count, sizeof(unsigned int)); CUERR;
+    MEMTEST_API_PREFIX(Memset)(err_count, 0, sizeof(unsigned int)); CUERR;
 
-    cudaMalloc((void**)&err_addr, sizeof(unsigned long)*MAX_ERR_RECORD_COUNT);CUERR;
-    cudaMemset(err_addr, 0, sizeof(unsigned long)*MAX_ERR_RECORD_COUNT);
+    MEMTEST_API_PREFIX(Malloc)((void**)&err_addr, sizeof(unsigned long)*MAX_ERR_RECORD_COUNT);CUERR;
+    MEMTEST_API_PREFIX(Memset)(err_addr, 0, sizeof(unsigned long)*MAX_ERR_RECORD_COUNT);
 
-    cudaMalloc((void**)&err_expect, sizeof(unsigned long)*MAX_ERR_RECORD_COUNT);CUERR;
-    cudaMemset(err_expect, 0, sizeof(unsigned long)*MAX_ERR_RECORD_COUNT);
+    MEMTEST_API_PREFIX(Malloc)((void**)&err_expect, sizeof(unsigned long)*MAX_ERR_RECORD_COUNT);CUERR;
+    MEMTEST_API_PREFIX(Memset)(err_expect, 0, sizeof(unsigned long)*MAX_ERR_RECORD_COUNT);
 
-    cudaMalloc((void**)&err_current, sizeof(unsigned long)*MAX_ERR_RECORD_COUNT);CUERR;
-    cudaMemset(err_current, 0, sizeof(unsigned long)*MAX_ERR_RECORD_COUNT);
+    MEMTEST_API_PREFIX(Malloc)((void**)&err_current, sizeof(unsigned long)*MAX_ERR_RECORD_COUNT);CUERR;
+    MEMTEST_API_PREFIX(Memset)(err_current, 0, sizeof(unsigned long)*MAX_ERR_RECORD_COUNT);
 
-    cudaMalloc((void**)&err_second_read, sizeof(unsigned long)*MAX_ERR_RECORD_COUNT);CUERR;
-    cudaMemset(err_second_read, 0, sizeof(unsigned long)*MAX_ERR_RECORD_COUNT);
+    MEMTEST_API_PREFIX(Malloc)((void**)&err_second_read, sizeof(unsigned long)*MAX_ERR_RECORD_COUNT);CUERR;
+    MEMTEST_API_PREFIX(Memset)(err_second_read, 0, sizeof(unsigned long)*MAX_ERR_RECORD_COUNT);
 }
 
 void
