@@ -129,7 +129,7 @@ thread_func(void* _arg)
 
 
     deviceProp_t prop;
-    MEMTEST_API_PREFIX(GetDeviceProperties)(&prop, device); CUERR;
+    CUERR(MEMTEST_API_PREFIX(GetDeviceProperties)(&prop, device));
 
     display_device_info(&prop);
 
@@ -144,14 +144,13 @@ thread_func(void* _arg)
     }
 
 
-    MEMTEST_API_PREFIX(SetDevice)(device);
-    MEMTEST_API_PREFIX(DeviceSynchronize)();
-    CUERR;
+    CUERR(MEMTEST_API_PREFIX(SetDevice)(device));
+    CUERR(MEMTEST_API_PREFIX(DeviceSynchronize)());
 
     PRINTF("Attached to device %d successfully.\n", device);
 
     size_t free, total;
-    MEMTEST_API_PREFIX(MemGetInfo)(&free, &total);
+    CUERR(MEMTEST_API_PREFIX(MemGetInfo)(&free, &total));
 
     allocate_small_mem();
 
@@ -169,16 +168,16 @@ thread_func(void* _arg)
         {
             //create cuda mapped memory
 #if defined(__CUDACC__)
-            cudaHostAlloc((void**)&mappedHostPtr,tot_num_blocks* BLOCKSIZE,cudaHostAllocMapped);
-            cudaHostGetDevicePointer(&ptr,mappedHostPtr,0);
+            CUERR(cudaHostAlloc((void**)&mappedHostPtr,tot_num_blocks* BLOCKSIZE,cudaHostAllocMapped));
+            CUERR(cudaHostGetDevicePointer(&ptr,mappedHostPtr,0));
 #elif defined(__HIP__)
-            hipHostAlloc((void**)&mappedHostPtr,tot_num_blocks* BLOCKSIZE,hipHostRegisterMapped);
-            hipHostGetDevicePointer((void**)&ptr,mappedHostPtr,0);
+            CUERR(hipHostMalloc((void**)&mappedHostPtr,tot_num_blocks* BLOCKSIZE,hipHostRegisterMapped));
+            CUERR(hipHostGetDevicePointer((void**)&ptr,mappedHostPtr,0));
 #endif
         }
         else
         {
-            MEMTEST_API_PREFIX(Malloc)((void**)&ptr, tot_num_blocks* BLOCKSIZE);
+            CUERR(MEMTEST_API_PREFIX(Malloc)((void**)&ptr, tot_num_blocks* BLOCKSIZE));
         }
     }while(MEMTEST_API_PREFIX(GetLastError)() != MEMTEST_API_PREFIX(Success));
 
@@ -282,7 +281,7 @@ main(int argc, char** argv)
     PRINTF("Running cuda memtest, version %s\n", VERSION);
     int device = -1;
     int num_gpus;
-    MEMTEST_API_PREFIX(GetDeviceCount)(&num_gpus);CUERR;
+    CUERR(MEMTEST_API_PREFIX(GetDeviceCount)(&num_gpus));
 
     if (num_gpus == 0){
 	fprintf(stderr,"ERROR: no GPUs found\n");
