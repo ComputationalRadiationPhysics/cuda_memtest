@@ -126,8 +126,25 @@ extern void get_driver_info(char* info, unsigned int len);
 
 
 
+
+
+
+#define CUERR(...)  do{ MEMTEST_API_PREFIX(Error_t) cuda_err; \
+	if ((cuda_err = __VA_ARGS__) != MEMTEST_API_PREFIX(Success)) {		\
+	    FPRINTF("ERROR: CUDA error: %s, line %d, file %s\n", MEMTEST_API_PREFIX(GetErrorString(cuda_err)),  __LINE__, __FILE__); \
+	    PRINTF("ERROR: CUDA error: %s, line %d, file %s\n", MEMTEST_API_PREFIX(GetErrorString)(cuda_err),  __LINE__, __FILE__); \
+	    exit(cuda_err);}}while(0)
+
+#define SYNC_CUERR_KERNEL(...)  do{ MEMTEST_API_PREFIX(Error_t) cuda_err; \
+    __VA_ARGS__; \
+	cuda_err = MEMTEST_API_PREFIX(DeviceSynchronize)(); \
+        if (cuda_err != MEMTEST_API_PREFIX(Success)) {                \
+            FPRINTF("ERROR: CUDA error: %s, line %d, file %s\n", MEMTEST_API_PREFIX(GetErrorString)(cuda_err),  __LINE__, __FILE__); \
+            PRINTF("ERROR: CUDA error: %s, line %d, file %s\n", MEMTEST_API_PREFIX(GetErrorString)(cuda_err),  __LINE__, __FILE__); \
+            exit(cuda_err);}}while(0)
+
 #define SHOW_PROGRESS(msg, i, tot_num_blocks)				\
-    MEMTEST_API_PREFIX(DeviceSynchronize)();						\
+    CUERR(MEMTEST_API_PREFIX(DeviceSynchronize)());						\
     unsigned int num_checked_blocks =  i+GRIDSIZE <= tot_num_blocks? i+GRIDSIZE: tot_num_blocks; \
     if (verbose >=2){							\
 	if(interactive){ \
@@ -136,21 +153,7 @@ extern void get_driver_info(char* info, unsigned int len);
 	    PRINTF("%s: %d out of %d blocks finished\n", msg, num_checked_blocks, tot_num_blocks );  \
 	} \
    }		\
-    fflush(stdout);
-
-
-#define CUERR  do{ MEMTEST_API_PREFIX(Error_t) cuda_err; \
-	if ((cuda_err = MEMTEST_API_PREFIX(GetLastError)()) != MEMTEST_API_PREFIX(Success)) {		\
-	    FPRINTF("ERROR: CUDA error: %s, line %d, file %s\n", MEMTEST_API_PREFIX(GetErrorString(cuda_err)),  __LINE__, __FILE__); \
-	    PRINTF("ERROR: CUDA error: %s, line %d, file %s\n", MEMTEST_API_PREFIX(GetErrorString)(cuda_err),  __LINE__, __FILE__); \
-	    exit(cuda_err);}}while(0)
-
-#define SYNC_CUERR  do{ MEMTEST_API_PREFIX(Error_t) cuda_err; \
-	MEMTEST_API_PREFIX(DeviceSynchronize)(); \
-        if ((cuda_err = MEMTEST_API_PREFIX(GetLastError)()) != MEMTEST_API_PREFIX(Success)) {                \
-            FPRINTF("ERROR: CUDA error: %s, line %d, file %s\n", MEMTEST_API_PREFIX(GetErrorString)(cuda_err),  __LINE__, __FILE__); \
-            PRINTF("ERROR: CUDA error: %s, line %d, file %s\n", MEMTEST_API_PREFIX(GetErrorString)(cuda_err),  __LINE__, __FILE__); \
-            exit(cuda_err);}}while(0)
+   fflush(stdout);
 
 #if (ENABLE_NVML==1)
 /**
