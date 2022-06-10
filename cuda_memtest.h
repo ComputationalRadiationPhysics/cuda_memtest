@@ -129,13 +129,13 @@ extern void get_driver_info(char* info, unsigned int len);
 
 
 
-#define CUERR(...)  do{ MEMTEST_API_PREFIX(Error_t) cuda_err; \
+#define CUERR(...)  do{ apiError_t cuda_err; \
 	if ((cuda_err = __VA_ARGS__) != MEMTEST_API_PREFIX(Success)) {		\
 	    FPRINTF("ERROR: CUDA error: %s, line %d, file %s\n", MEMTEST_API_PREFIX(GetErrorString(cuda_err)),  __LINE__, __FILE__); \
 	    PRINTF("ERROR: CUDA error: %s, line %d, file %s\n", MEMTEST_API_PREFIX(GetErrorString)(cuda_err),  __LINE__, __FILE__); \
 	    exit(cuda_err);}}while(0)
 
-#define SYNC_CUERR_KERNEL(...)  do{ MEMTEST_API_PREFIX(Error_t) cuda_err; \
+#define SYNC_CUERR_KERNEL(...)  do{ apiError_t cuda_err; \
     __VA_ARGS__; \
 	cuda_err = MEMTEST_API_PREFIX(DeviceSynchronize)(); \
         if (cuda_err != MEMTEST_API_PREFIX(Success)) {                \
