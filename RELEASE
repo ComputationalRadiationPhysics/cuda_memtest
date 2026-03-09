@@ -1,3 +1,6 @@
+1.2.4 (2/10/2026)
+* Increment version number, since it has been over a decade
+
 1.2.3 (2/7/2012)
 * Fixed a bug broke  --max_num_blocks option
 * Slightly reduced the total memory allocated to allow future small memory allocation to work 

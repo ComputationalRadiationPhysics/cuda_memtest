@@ -67,7 +67,7 @@
 #include <nvml.h>
 #endif
 
-#define VERSION "1.2.3"
+#define VERSION "1.2.4"
 
 #define ERR_BAD_STATE  -1
 #define ERR_GENERAL -999
