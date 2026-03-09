@@ -595,9 +595,9 @@ kernel0_local_write(__global char* ptr, unsigned long memsize)
   
 
   for(i=idx; i < n; i+= total_num_threads){
-    __global unsigned long * start_p= (__global unsigned long)(ptr + i*BLOCKSIZE);
-    __global unsigned long* end_p = (__global unsigned long*)(ptr + (i+1)*BLOCKSIZE);
-    __global unsigned long * p =start_p;
+    __global unsigned long * start_p = (__global unsigned long*)(ptr + i*BLOCKSIZE);
+    __global unsigned long * end_p = (__global unsigned long*)(ptr + (i+1)*BLOCKSIZE);
+    __global unsigned long * p = start_p;
     unsigned int pattern = 1;
     unsigned int mask = 8;
       
@@ -645,9 +645,9 @@ kernel0_local_read(__global char* ptr, unsigned long memsize,
   
 
   for(i=idx; i < n; i+= total_num_threads){
-    __global unsigned long * start_p= (__global unsigned long)(ptr + i*BLOCKSIZE);
-    __global unsigned long* end_p = (__global unsigned long*)(ptr + (i+1)*BLOCKSIZE);
-    __global unsigned long * p =start_p;
+    __global unsigned long * start_p = (__global unsigned long*)(ptr + i*BLOCKSIZE);
+    __global unsigned long * end_p = (__global unsigned long*)(ptr + (i+1)*BLOCKSIZE);
+    __global unsigned long * p = start_p;
     unsigned int pattern = 1;
     unsigned int mask = 8;
       

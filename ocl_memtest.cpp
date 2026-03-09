@@ -18,7 +18,7 @@ unsigned int exit_on_error = 0;
 
 
 
-#define KERNEL_FILE "ocl_memtest_kernels.cpp"
+#define KERNEL_FILE "ocl_memtest_kernels.cl"
 
 #define MAX_KERNEL_FILE_SIZE (1024*1024)
 

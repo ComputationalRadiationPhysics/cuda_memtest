@@ -105,6 +105,7 @@ if(NOT MSVC)
 endif()
 
 find_package(Threads REQUIRED)
+find_package(OpenCL REQUIRED)
 
 
 ################################################################################
@@ -126,6 +127,11 @@ add_executable(cuda_memtest
         tests.cpp
         misc.cpp
         cuda_memtest.cpp
+        )
+
+add_executable(ocl_memtest
+        ocl_tests.cpp
+        ocl_memtest.cpp
         )
 
 if(CUDA_MEMTEST_BACKEND STREQUAL "cuda")
@@ -152,6 +158,10 @@ endif()
 
 if(NOT MSVC)
     target_link_libraries(cuda_memtest PRIVATE Threads::Threads)
+    target_link_libraries(ocl_memtest
+        PRIVATE Threads::Threads
+        PRIVATE OpenCL::OpenCL
+        )
 endif()
 
 ## annotate with RPATH's
@@ -175,11 +185,14 @@ endif()
 option(CUDA_MEMTEST_RELEASE "disable all runtime asserts" ON)
 if(CUDA_MEMTEST_RELEASE)
     target_compile_definitions(cuda_memtest PRIVATE NDEBUG)
+    target_compile_definitions(ocl_memtest PRIVATE NDEBUG)
 endif(CUDA_MEMTEST_RELEASE)
 
 ################################################################################
 # Install cuda_memtest
 ################################################################################
 
-install(TARGETS cuda_memtest
+install(TARGETS
+        cuda_memtest
+        ocl_memtest
         RUNTIME DESTINATION bin)
